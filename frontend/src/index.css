@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-light text-dark font-sans antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e3a5f44;
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1e3a5f99;
+  }
+}
+
+@layer utilities {
+  .glassmorphism {
+    @apply bg-white/70 backdrop-blur-md border border-white/30 shadow-xl;
+  }
+
+  .glass-dark {
+    @apply bg-white/10 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-[#16325a] text-white font-semibold rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 px-6 py-3;
+  }
+
+  .btn-gold {
+    @apply bg-secondary hover:bg-[#b5923c] text-white font-semibold rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 px-6 py-3;
+  }
+
+  .card-stat {
+    @apply glassmorphism p-6 rounded-2xl flex items-center gap-4 hover:-translate-y-1 transition-transform duration-300;
+  }
+
+  .status-calling {
+    @apply bg-emerald-100 text-emerald-700 border border-emerald-200 animate-pulse-badge;
+  }
+
+  .status-waiting {
+    @apply bg-amber-100 text-amber-700 border border-amber-200;
+  }
+
+  .token-display {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+}

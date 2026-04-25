@@ -43,8 +43,8 @@ export const AuthProvider = ({ children }) => {
     window.location.href = data.role === 'Admin' ? '/dashboard/admin' : data.role === 'Agent' ? '/dashboard/agent' : '/dashboard/customer';
   };
 
-  const register = async (name, email, password, role) => {
-    const { data } = await axios.post('/auth/register', { name, email, password, role });
+  const register = async (name, email, password, role, department) => {
+    const { data } = await axios.post('/auth/register', { name, email, password, role, department });
     localStorage.setItem('token', data.token);
     setToken(data.token);
     window.location.href = data.role === 'Admin' ? '/dashboard/admin' : data.role === 'Agent' ? '/dashboard/agent' : '/dashboard/customer';

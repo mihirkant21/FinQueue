@@ -18,6 +18,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['Customer', 'Agent', 'Admin'],
     default: 'Customer'
+  },
+  department: {
+    type: String,
+    enum: ['Account Services', 'Loan Services', 'Foreign Exchange', 'General Inquiry', 'Card Services', 'Fixed Deposits', 'All'],
+    default: 'All'
   }
 }, { timestamps: true });
 

@@ -7,19 +7,15 @@ const seedDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`Connected to: ${conn.connection.name}`);
-    
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('12345678', salt);
-
-    // Create Admin
     await User.create({
       name: 'System Admin',
       email: 'admin',
       password: hashedPassword,
       role: 'Admin'
     });
-    
+
     console.log('Admin user forcefully created!');
     process.exit(0);
   } catch (error) {

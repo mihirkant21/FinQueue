@@ -8,13 +8,14 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Customer');
+  const [department, setDepartment] = useState('Account Services');
   const [error, setError] = useState('');
   const { register } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await register(name, email, password, role);
+      await register(name, email, password, role, department);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to register');
     }
@@ -81,6 +82,25 @@ const Register = () => {
               <option value="Agent">Bank Teller</option>
             </select>
           </div>
+
+          {role === 'Agent' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Department / Service Type</label>
+              <select
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-white/50"
+              >
+                <option value="Account Services">Account Services</option>
+                <option value="Loan Services">Loan Services</option>
+                <option value="Foreign Exchange">Foreign Exchange</option>
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Card Services">Card Services</option>
+                <option value="Fixed Deposits">Fixed Deposits</option>
+                <option value="All">All Services</option>
+              </select>
+            </div>
+          )}
 
           <button type="submit" className="w-full bg-primary hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg mt-2">
             Create Account

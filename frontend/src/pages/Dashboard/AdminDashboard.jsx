@@ -22,6 +22,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [counters, setCounters] = useState([]);
   const [newCounterName, setNewCounterName] = useState('');
+  const [newCounterService, setNewCounterService] = useState('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
@@ -69,8 +70,9 @@ const AdminDashboard = () => {
   const createCounter = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/counters', { counterName: newCounterName });
+      await axios.post('/counters', { counterName: newCounterName, serviceType: newCounterService });
       setNewCounterName('');
+      setNewCounterService('All');
       fetchData();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create counter');
@@ -150,9 +152,9 @@ const AdminDashboard = () => {
           { icon: <Users className="w-5 h-5 text-primary" />, bg: 'bg-primary/10', label: 'Total Today', value: stats.totalCustomers },
           { icon: <Activity className="w-5 h-5 text-amber-600" />, bg: 'bg-amber-50', label: 'Waiting', value: stats.waiting },
           { icon: <UserCheck className="w-5 h-5 text-emerald-600" />, bg: 'bg-emerald-50', label: 'In Service', value: stats.inService },
-          { icon: <Settings className="w-5 h-5 text-violet-600" />, bg: 'bg-violet-50', label: 'Active Counters', value: activeCounters },
+          { icon: <Settings className="w-5 h-5 text-violet-600" />, bg: 'bg-violet-50', label: 'Active Counters', value: activeCounters, onClick: () => setActiveTab('Counters') },
         ].map((s, i) => (
-          <div key={i} className="glassmorphism rounded-2xl p-5 hover:-translate-y-1 transition-transform duration-300">
+          <div key={i} onClick={s.onClick} className={`glassmorphism rounded-2xl p-5 transition-transform duration-300 ${s.onClick ? 'cursor-pointer hover:-translate-y-1 hover:shadow-md' : 'hover:-translate-y-1'}`}>
             <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center mb-3`}>{s.icon}</div>
             <p className="text-2xl font-black text-dark">{s.value}</p>
             <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-1">{s.label}</p>
@@ -235,7 +237,7 @@ const AdminDashboard = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b-2 border-gray-100">
-                    {['Token', 'Customer', 'Service', 'Status', 'Counter'].map(h => (
+                    {['Token', 'Customer', 'Service', 'Status', 'Counter', 'Time'].map(h => (
                       <th key={h} className="pb-3 text-xs text-gray-400 font-bold uppercase tracking-wider px-2">{h}</th>
                     ))}
                   </tr>
@@ -243,7 +245,7 @@ const AdminDashboard = () => {
                 <tbody>
                   {allTokens.filter(t => t.status === 'Waiting' || t.status === 'Called').length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="text-center py-10 text-gray-400">
+                      <td colSpan="6" className="text-center py-10 text-gray-400">
                         <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
                         Queue is currently empty
                       </td>
@@ -269,6 +271,9 @@ const AdminDashboard = () => {
                         <td className="py-3.5 px-2 text-xs text-gray-500">
                           {token.serviceCounterId?.counterName || '—'}
                         </td>
+                        <td className="py-3.5 px-2 text-xs text-gray-500 font-semibold">
+                          {new Date(token.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -281,6 +286,7 @@ const AdminDashboard = () => {
 
       {/* ── COUNTERS TAB ── */}
       {activeTab === 'Counters' && (
+        <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Counters Table */}
           <div className="lg:col-span-2 glassmorphism rounded-3xl p-8">
@@ -289,7 +295,7 @@ const AdminDashboard = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b-2 border-gray-100">
-                    {['Counter Name', 'Assigned Teller', 'Status', 'Actions'].map(h => (
+                    {['Counter Name', 'Service', 'Assigned Teller', 'Status', 'Actions'].map(h => (
                       <th key={h} className="pb-3 text-xs text-gray-400 font-bold uppercase tracking-wider px-2">{h}</th>
                     ))}
                   </tr>
@@ -303,6 +309,11 @@ const AdminDashboard = () => {
                     counters.map((counter) => (
                       <tr key={counter._id} className="border-b border-gray-50 last:border-0 hover:bg-primary/5 transition-colors">
                         <td className="py-4 px-2 font-bold text-dark">{counter.counterName}</td>
+                        <td className="py-4 px-2">
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${serviceColors[counter.serviceType]?.badge || 'bg-gray-100 text-gray-600'}`}>
+                            {counter.serviceType || 'All'}
+                          </span>
+                        </td>
                         <td className="py-4 px-2">
                           <select
                             id={`assign-agent-${counter._id}`}
@@ -376,6 +387,18 @@ const AdminDashboard = () => {
                   onChange={(e) => setNewCounterName(e.target.value)}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1.5">Service Type</label>
+                <select
+                  value={newCounterService}
+                  onChange={(e) => setNewCounterService(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/40 focus:border-transparent outline-none transition-all bg-white/60"
+                >
+                  {['All', 'Account Services', 'Loan Services', 'Foreign Exchange', 'General Inquiry', 'Card Services', 'Fixed Deposits'].map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
               <button
                 id="create-counter-btn"
                 type="submit"
@@ -408,6 +431,32 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+        
+        {/* Resource Summary */}
+        <div className="glassmorphism rounded-3xl p-8 mt-8">
+          <h2 className="text-xl font-bold mb-6">Resource Allocation per Service</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {['Account Services', 'Loan Services', 'Foreign Exchange', 'General Inquiry', 'Card Services', 'Fixed Deposits'].map(service => {
+              const serviceCounters = counters.filter(c => c.serviceType === service || c.serviceType === 'All').length;
+              const serviceAgents = agents.filter(a => a.department === service || a.department === 'All').length;
+              const colors = serviceColors[service] || { badge: 'bg-gray-100 text-gray-600' };
+              return (
+                <div key={service} className="p-4 border border-gray-100 rounded-2xl bg-white/40">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full mb-3 inline-block whitespace-nowrap overflow-hidden text-ellipsis max-w-full ${colors.badge}`}>{service}</span>
+                  <div className="flex justify-between text-sm mb-1 mt-2">
+                    <span className="text-gray-500">Counters:</span>
+                    <span className="font-bold text-dark">{serviceCounters}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Tellers:</span>
+                    <span className="font-bold text-dark">{serviceAgents}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        </>
       )}
 
       {/* ── ANALYTICS TAB ── */}

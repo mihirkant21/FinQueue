@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
+  console.log(options)
   try {
     if (process.env.EMAIL_USER === 'your_mailtrap_user' || !process.env.EMAIL_USER) {
       console.log(`[MOCK EMAIL] To: ${options.email} | Subject: ${options.subject}`);
@@ -17,6 +18,7 @@ const sendEmail = async (options) => {
         pass: process.env.EMAIL_PASS,
       },
     });
+    console.log(transporter);
 
     const mailOptions = {
       from: '"Digital Queue System" <noreply@queuesystem.com>',

@@ -17,14 +17,17 @@ const getCounters = async (req, res) => {
 // @access Private/Admin
 const createCounter = async (req, res) => {
   try {
-    const { counterName } = req.body;
+    const { counterName, serviceType } = req.body;
     const counterExists = await ServiceCounter.findOne({ counterName });
 
     if (counterExists) {
       return res.status(400).json({ message: 'Counter name already exists' });
     }
 
-    const counter = await ServiceCounter.create({ counterName });
+    const counter = await ServiceCounter.create({ 
+      counterName, 
+      serviceType: serviceType || 'All' 
+    });
     res.status(201).json(counter);
   } catch (error) {
     res.status(500).json({ message: error.message });

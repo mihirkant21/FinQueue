@@ -10,7 +10,7 @@ const generateToken = (id) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, department } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -24,7 +24,8 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'Customer'
+      role: role || 'Customer',
+      department: role === 'Agent' ? (department || 'All') : undefined
     });
 
     if (user) {
@@ -33,6 +34,7 @@ const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        department: user.department,
         token: generateToken(user._id),
       });
     } else {
@@ -54,6 +56,7 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        department: user.department,
         token: generateToken(user._id),
       });
     } else {

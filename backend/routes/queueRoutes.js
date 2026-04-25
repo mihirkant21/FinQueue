@@ -17,7 +17,7 @@ router.get('/my-tokens', protect, getMyTokens);
 router.get('/stats', protect, authorize('Admin'), getQueueStats);
 router.get('/all', protect, authorize('Admin'), getAllTokensHistory);
 router.get('/', protect, authorize('Agent', 'Admin'), getAllTokens);
-router.put('/call-next', protect, authorize('Agent'), callNextToken);
+router.put('/call-next', protect, authorize('Agent', 'Admin'), callNextToken);
 router.put('/:id/complete', protect, authorize('Agent', 'Admin'), completeToken);
 router.delete('/:id', protect, cancelToken);
 

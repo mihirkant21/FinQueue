@@ -24,6 +24,7 @@ const AgentDashboard = () => {
   const [calling, setCalling] = useState(false);
   const [completingId, setCompletingId] = useState(null);
   const [error, setError] = useState('');
+  const [isAssignedByAdmin, setIsAssignedByAdmin] = useState(false);
   const socket = useSocket();
 
   const fetchData = async () => {
@@ -42,15 +43,21 @@ const AgentDashboard = () => {
         c => c.assignedAgent && c.assignedAgent._id === userRes.data._id
       );
 
+      const departmentCounters = countersRes.data.filter(
+        c => userRes.data.department === 'All' || c.serviceType === userRes.data.department || c.serviceType === 'All'
+      );
+
       if (myAssignedCounters.length > 0) {
         setCounters(myAssignedCounters);
+        setIsAssignedByAdmin(true);
         if (!selectedCounter || !myAssignedCounters.find(b => b._id === selectedCounter)) {
           setSelectedCounter(myAssignedCounters[0]._id);
         }
       } else {
-        setCounters(countersRes.data);
-        if (!selectedCounter && countersRes.data.length > 0) {
-          setSelectedCounter(countersRes.data[0]._id);
+        setCounters(departmentCounters);
+        setIsAssignedByAdmin(false);
+        if (!selectedCounter && departmentCounters.length > 0) {
+          setSelectedCounter(departmentCounters[0]._id);
         }
       }
       setError('');
@@ -126,18 +133,22 @@ const AgentDashboard = () => {
         <div className="flex items-center gap-3 glassmorphism px-4 py-3 rounded-2xl shadow-sm">
           <Building2 className="w-5 h-5 text-primary flex-shrink-0" />
           <div className="flex flex-col leading-tight">
-            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Active Counter</span>
-            <select
-              id="counter-selector"
-              value={selectedCounter}
-              onChange={(e) => setSelectedCounter(e.target.value)}
-              className="bg-transparent border-none font-bold text-primary outline-none cursor-pointer text-sm"
-            >
-              <option value="" disabled>Select Counter</option>
-              {counters.map(c => (
-                <option key={c._id} value={c._id}>{c.counterName}</option>
-              ))}
-            </select>
+            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{isAssignedByAdmin ? 'Assigned Counter' : 'Active Counter'}</span>
+            {isAssignedByAdmin ? (
+              <span className="font-bold text-primary text-sm mt-0.5">{selectedCounterName}</span>
+            ) : (
+              <select
+                id="counter-selector"
+                value={selectedCounter}
+                onChange={(e) => setSelectedCounter(e.target.value)}
+                className="bg-transparent border-none font-bold text-primary outline-none cursor-pointer text-sm"
+              >
+                <option value="" disabled>Select Counter</option>
+                {counters.map(c => (
+                  <option key={c._id} value={c._id}>{c.counterName}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
       </div>
@@ -199,12 +210,13 @@ const AgentDashboard = () => {
                   <th className="pb-3 text-xs text-gray-400 font-bold uppercase tracking-wider px-3">Customer</th>
                   <th className="pb-3 text-xs text-gray-400 font-bold uppercase tracking-wider px-3">Service</th>
                   <th className="pb-3 text-xs text-gray-400 font-bold uppercase tracking-wider px-3">Position</th>
+                  <th className="pb-3 text-xs text-gray-400 font-bold uppercase tracking-wider px-3">Time</th>
                 </tr>
               </thead>
               <tbody>
                 {queue.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="text-center py-12 text-gray-400">
+                    <td colSpan="5" className="text-center py-12 text-gray-400">
                       <Ticket className="w-10 h-10 mx-auto mb-3 opacity-30" />
                       <p className="font-medium">No customers currently waiting</p>
                     </td>
@@ -226,6 +238,9 @@ const AgentDashboard = () => {
                       </td>
                       <td className="py-4 px-3">
                         <span className="text-sm font-bold text-gray-600">#{idx + 1}</span>
+                      </td>
+                      <td className="py-4 px-3">
+                        <span className="text-xs text-gray-500 font-semibold">{new Date(token.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
                       </td>
                     </tr>
                   ))
@@ -263,7 +278,9 @@ const AgentDashboard = () => {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-dark">{token.customerName}</p>
-                      <p className="text-xs text-gray-500 mb-1">{token.phoneNumber}</p>
+                      <p className="text-xs text-gray-500 mb-1">
+                        {token.phoneNumber} • Gen: {new Date(token.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
                       {token.serviceCounterId && (
                         <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                           <Building2 className="w-3 h-3" /> {token.serviceCounterId.counterName}

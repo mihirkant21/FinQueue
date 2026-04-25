@@ -31,7 +31,7 @@ const generateToken = async (req, res) => {
       return res.status(400).json({ message: 'Please provide your name, phone number, and service type.' });
     }
 
-    const waitingTokens = await QueueToken.find({ status: 'Waiting' });
+    const waitingTokens = await QueueToken.find({ status: 'Waiting', serviceType });
     const queueLength = waitingTokens.length;
     const position = queueLength + 1;
 
@@ -40,9 +40,21 @@ const generateToken = async (req, res) => {
       estimatedWaitTime += getServiceDuration(t.serviceType);
     });
 
-    // Generate token number in Q-001 format
-    const tokenCount = await QueueToken.countDocuments();
-    const tokenNumber = `Q-${(tokenCount + 1).toString().padStart(3, '0')}`;
+    const getServicePrefix = (type) => {
+      const prefixes = {
+        'Account Services': 'ACC',
+        'Loan Services': 'LON',
+        'Foreign Exchange': 'FEX',
+        'General Inquiry': 'GEN',
+        'Card Services': 'CRD',
+        'Fixed Deposits': 'FIX',
+      };
+      return prefixes[type] || 'Q';
+    };
+
+    const prefix = getServicePrefix(serviceType);
+    const tokenCount = await QueueToken.countDocuments({ serviceType });
+    const tokenNumber = `${prefix}-${(tokenCount + 1).toString().padStart(3, '0')}`;
 
     const newToken = await QueueToken.create({
       userId: req.user._id,
@@ -84,6 +96,7 @@ const getMyTokens = async (req, res) => {
         const tokensAhead = await QueueToken.find({
           createdAt: { $lte: token.createdAt },
           status: 'Waiting',
+          serviceType: token.serviceType,
         });
 
         let position = 0;
@@ -111,7 +124,11 @@ const getMyTokens = async (req, res) => {
 // @access Private (Agent, Admin)
 const getAllTokens = async (req, res) => {
   try {
-    const tokens = await QueueToken.find({ status: { $in: ['Waiting', 'Called'] } })
+    let query = { status: { $in: ['Waiting', 'Called'] } };
+    if (req.user.role === 'Agent' && req.user.department && req.user.department !== 'All') {
+      query.serviceType = req.user.department;
+    }
+    const tokens = await QueueToken.find(query)
       .populate('userId', 'name email')
       .populate('serviceCounterId', 'counterName')
       .sort('createdAt');
@@ -141,9 +158,13 @@ const getAllTokensHistory = async (req, res) => {
 // @access Private (Agent)
 const callNextToken = async (req, res) => {
   try {
-    const token = await QueueToken.findOne({ status: 'Waiting' }).sort('createdAt');
+    let query = { status: 'Waiting' };
+    if (req.user.role === 'Agent' && req.user.department && req.user.department !== 'All') {
+      query.serviceType = req.user.department;
+    }
+    const token = await QueueToken.findOne(query).sort('createdAt');
     if (!token) {
-      return res.status(404).json({ message: 'No more customers in the queue.' });
+      return res.status(404).json({ message: 'No more customers in your department\'s queue.' });
     }
 
     const { counterId } = req.body;

@@ -270,7 +270,10 @@ const CustomerDashboard = () => {
                       </span>
 
                       <p className="text-gray-400 text-sm font-medium mb-1">{item.token.customerName}</p>
-                      <p className="text-gray-300 text-xs mb-4">{item.token.phoneNumber}</p>
+                      <p className="text-gray-300 text-xs mb-1">{item.token.phoneNumber}</p>
+                      <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-4">
+                        Generated at: {new Date(item.token.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
 
                       <div
                         className={`text-8xl font-black token-display mb-6 ${isCalled ? 'text-emerald-600' : 'text-primary'}`}

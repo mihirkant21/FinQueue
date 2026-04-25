@@ -26,7 +26,6 @@ Skip the physical line — get a token, track your position live, and walk in on
 - [Environment Variables](#-environment-variables)
 - [User Roles](#-user-roles)
 - [API Endpoints](#-api-endpoints)
-- [Screenshots](#-screenshots)
 
 ---
 
@@ -236,7 +235,7 @@ EMAIL_PASS=your_16_char_app_password
 
 ## 🎓 Academic Context
 
-This project was developed as part of the **Full Stack Development** course — **SRM Institute of Science and Technology, SEM 4**.
+This project was developed as part of the **Full Stack Development** course — **SRM University AP , SEM 4**.
 
 It demonstrates:
 - MERN stack architecture (MongoDB, Express, React, Node.js)
@@ -255,5 +254,5 @@ This project is for academic purposes. Feel free to use it as a reference.
 ---
 
 <div align="center">
-Made with ❤️ Mihir
+Made with ❤️ by Mihir
 </div>

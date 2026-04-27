@@ -8,8 +8,7 @@ const queueTokenSchema = new mongoose.Schema({
   },
   tokenNumber: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   customerName: {
     type: String,

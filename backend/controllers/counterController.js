@@ -55,8 +55,25 @@ const assignAgent = async (req, res) => {
   }
 };
 
+// @desc Delete a counter
+// @route DELETE /api/counters/:id
+// @access Private/Admin
+const deleteCounter = async (req, res) => {
+  try {
+    const counter = await ServiceCounter.findById(req.params.id);
+    if (!counter) {
+      return res.status(404).json({ message: 'Counter not found' });
+    }
+    await counter.deleteOne();
+    res.status(200).json({ message: 'Counter deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getCounters,
   createCounter,
-  assignAgent
+  assignAgent,
+  deleteCounter
 };

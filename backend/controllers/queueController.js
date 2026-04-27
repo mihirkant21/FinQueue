@@ -53,8 +53,31 @@ const generateToken = async (req, res) => {
     };
 
     const prefix = getServicePrefix(serviceType);
-    const tokenCount = await QueueToken.countDocuments({ serviceType });
-    const tokenNumber = `${prefix}-${(tokenCount + 1).toString().padStart(3, '0')}`;
+    
+    // Check if the queue for this service type is currently empty (no Waiting or Called tokens)
+    const activeTokensCount = await QueueToken.countDocuments({
+      serviceType,
+      status: { $in: ['Waiting', 'Called'] },
+    });
+
+    let nextNumber = 1;
+
+    if (activeTokensCount > 0) {
+      // If the queue is not empty, find the last generated token to increment from it
+      const lastToken = await QueueToken.findOne({ serviceType }).sort({ createdAt: -1 });
+
+      if (lastToken && lastToken.tokenNumber) {
+        const parts = lastToken.tokenNumber.split('-');
+        if (parts.length === 2) {
+          const lastNumber = parseInt(parts[1], 10);
+          if (!isNaN(lastNumber)) {
+            nextNumber = lastNumber + 1;
+          }
+        }
+      }
+    }
+
+    const tokenNumber = `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
 
     const newToken = await QueueToken.create({
       userId: req.user._id,
